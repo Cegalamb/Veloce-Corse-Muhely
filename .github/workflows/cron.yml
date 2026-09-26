@@ -14,9 +14,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Repó életben tartása (60 napos inaktivitás elkerülése)
-        uses: gautamkrishnar/keepalive-workflow@v2
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          UTOLSO_COMMIT_MP=$(git log -1 --format=%ct)
+          MOST=$(date +%s)
+          NAPOK=$(( (MOST - UTOLSO_COMMIT_MP) / 86400 ))
+          echo "Az utolsó commit óta eltelt napok: $NAPOK"
+          if [ "$NAPOK" -ge 45 ]; then
+            git commit --allow-empty -m "chore: életben tartó commit (60 napos inaktivitás elkerülése)"
+            git push
+          fi
 
       - name: Node.js telepítése
         uses: actions/setup-node@v4
